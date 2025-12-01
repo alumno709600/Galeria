@@ -1,4 +1,5 @@
-
+// Hecho por Elias Maatalat
+// Datos de las imágenes
 const imagenes = [
   {
     id: 1,
@@ -111,3 +112,78 @@ const imagenes = [
     }
   }
 ];
+
+// Detectar densidad de píxeles
+const dpr = window.devicePixelRatio >= 2 ? "2x" : "1x";
+
+// Determinar tamaño según ancho de pantalla
+function getTamaño() {
+  const ancho = window.innerWidth;
+  if (ancho < 480) return "small";
+  if (ancho < 768) return "medium";
+  if (ancho < 1200) return "large";
+  return "xlarge";
+}
+
+// Generar galería
+function generarGaleria() {
+  const gallery = document.getElementById("gallery");
+  gallery.innerHTML = "";
+
+  imagenes.forEach((img) => {
+    const tamaño = getTamaño();
+    const srcGaleria = img.srcset[tamaño][dpr] || img.srcset.medium["1x"];
+    const srcModal = img.srcset.xlarge["2x"] || img.srcset.xlarge["1x"];
+
+    const item = document.createElement("div");
+    item.className = "gallery-item";
+    item.innerHTML = `
+      <img src="${srcGaleria}" alt="${img.titulo}" data-modal-src="${srcModal}" data-id="${img.id}">
+      <div class="gallery-item-caption">${img.titulo}</div>
+    `;
+
+    item.addEventListener("click", () => {
+      abrirModal(srcModal, img.descripcion);
+    });
+
+    gallery.appendChild(item);
+  });
+}
+
+// Abrir modal
+function abrirModal(src, caption) {
+  const modal = document.getElementById("modal");
+  const modalImage = document.getElementById("modalImage");
+  const modalCaption = document.getElementById("modalCaption");
+
+  modalImage.src = src;
+  modalCaption.textContent = caption;
+  modal.classList.add("active");
+}
+
+// Cerrar modal
+function cerrarModal() {
+  const modal = document.getElementById("modal");
+  modal.classList.remove("active");
+}
+
+// Event listeners
+document.querySelector(".close").addEventListener("click", cerrarModal);
+document.getElementById("modal").addEventListener("click", (e) => {
+  if (e.target.id === "modal") {
+    cerrarModal();
+  }
+});
+
+// Tecla Escape para cerrar modal
+document.addEventListener("keydown", (e) => {
+  if (e.key === "Escape") {
+    cerrarModal();
+  }
+});
+
+// Regenerar galería al cambiar tamaño
+window.addEventListener("resize", generarGaleria);
+
+// Inicializar
+generarGaleria();
